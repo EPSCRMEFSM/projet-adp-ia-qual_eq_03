@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outil Diagnostic — Triple Saut DI-TRI — ADP 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            padding: 10px;
+        }
+
+        .progress-step::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #dee2e6;
+            z-index: 0;
+        }
+
+        .progress-step:last-child::after {
+            display: none;
+        }
+
+        .progress-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #dee2e6;
+            color: #6c757d;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+
+        .progress-step.active .progress-number {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .progress-step.completed .progress-number {
+            background: #28a745;
+            color: white;
+        }
+
+        .progress-label {
+            font-size: 0.9em;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .progress-step.active .progress-label {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .input-section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .student-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            justify-content: space-between;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #dee2e6;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .profile-A {
+            background-color: #ffebee !important;
+        }
+
+        .profile-B {
+            background-color: #fff3e0 !important;
+        }
+
+        .profile-C {
+            background-color: #e8f5e9 !important;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            font-size: 1.3em;
+            color: #495057;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .axis-selector {
+            margin-bottom: 30px;
+        }
+
+        .axis-item {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .axis-item:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .axis-item.selected {
+            border-color: #667eea;
+            background: #e7f1ff;
+        }
+
+        .axis-item input[type="checkbox"] {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .axis-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .axis-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #495057;
+            flex: 1;
+        }
+
+        .pertinence-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .axis-details {
+            color: #6c757d;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-left: 35px;
+        }
+
+        .slider-container {
+            margin: 30px 0;
+        }
+
+        .slider-label {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 20px;
+        }
+
+        .slider-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: #dee2e6;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #5568d3;
+        }
+
+        .slider-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .distribution-preview {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .distribution-preview h4 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .distribution-table {
+            width: 100%;
+        }
+
+        .distribution-table td {
+            padding: 10px;
+            border: 1px solid #dee2e6;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #17a2b8;
+            color: #0c5460;
+        }
+
+        .summary-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+
+        .summary-box h4 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .summary-value {
+            color: #6c757d;
+        }
+
+        @media print {
+            .btn, .progress-bar, .input-section {
+                display: none;
+            }
+            body {
+                background: white;
+                padding: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .student-row {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.85em;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏃 Triple Saut — Diagnostic Initial (DI-TRI)</h1>
+            <p>Outil d\u2019aide à la décision pédagogique — ADP 2026 — CRMEF Inezgane</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-step active" id="progress-1">
+                <div class="progress-number">1</div>
+                <div class="progress-label">Diagnostic</div>
+            </div>
+            <div class="progress-step" id="progress-2">
+                <div class="progress-number">2</div>
+                <div class="progress-label">Axes prioritaires</div>
+            </div>
+            <div class="progress-step" id="progress-3">
+                <div class="progress-number">3</div>
+                <div class="progress-label">Paramétrage</div>
+            </div>
+            <div class="progress-step" id="progress-4">
+                <div class="progress-number">4</div>
+                <div class="progress-label">Planification</div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- ÉTAPE 1 : DIAGNOSTIC -->
+            <div class="step-content active" id="step-1">
+                <div class="input-section">
+                    <h3>📝 Saisie des données</h3>
+                    
+                    <div class="form-group">
+                        <label>Import CSV terrain (facultatif)</label>
+                        <input type="file" id="csvFile" accept=".csv">
+                        <small style="color: #6c757d; display: block; margin-top: 5px;">
+                            Format attendu : colonnes OBS01_VE, OBS02_EQ, OBS03_R1 (codes A/B/C) ou numériques 0-10
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ou saisie manuelle</label>
+                        <div id="studentsList">
+                            <div class="student-row">
+                                <input type="text" placeholder="Prénom de l\u2019élève" class="student-name">
+                                <input type="number" min="0" max="10" step="0.1" placeholder="OBS-01 (/10)" class="obs1">
+                                <input type="number" min="0" max="10" step="0.1" placeholder="OBS-02 (/10)" class="obs2">
+                                <input type="number" min="0" max="10" step="0.1" placeholder="OBS-03 (/10)" class="obs3">
+                                <button class="btn btn-danger" onclick="removeStudentRow(this)">✕</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="addStudentRow()" style="margin-top: 10px;">+ Ajouter un élève</button>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <div></div>
+                    <button class="btn btn-primary" onclick="analyzeData()">Analyser →</button>
+                </div>
+
+                <div id="diagnosticResults" style="display: none; margin-top: 30px;">
+                    <div class="card">
+                        <div class="card-header">📊 Bilan de classe</div>
+                        <div class="stats-grid" id="statsGrid"></div>
+                        <div id="observableAnalysis"></div>
+                        <div id="groupsAnalysis"></div>
+                        <div id="classDecision"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">👥 Résultats individuels</div>
+                        <div style="overflow-x: auto;">
+                            <table id="resultsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Rang</th>
+                                        <th>Prénom</th>
+                                        <th>OBS-01</th>
+                                        <th>OBS-02</th>
+                                        <th>OBS-03</th>
+                                        <th>Moy /10</th>
+                                        <th>/20</th>
+                                        <th>Profil</th>
+                                        <th>Détail</th>
+                                        <th>Lacune(s)</th>
+                                        <th>Axe prioritaire</th>
+                                        <th>SA</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <div></div>
+                        <button class="btn btn-primary" onclick="goToStep(2)">Passer à l\u2019étape 2 — Axes prioritaires →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 2 : AXES PRIORITAIRES -->
+            <div class="step-content" id="step-2">
+                <div class="card">
+                    <div class="card-header">🎯 Sélection des axes prioritaires</div>
+                    <p style="color: #6c757d; margin-bottom: 20px;">
+                        Sélectionnez <strong>3 ou 4 axes maximum</strong> parmi les 6 proposés. 
+                        Les axes sont classés par ordre de pertinence selon les lacunes détectées dans votre classe.
+                    </p>
+                    <div id="axisSelector" class="axis-selector"></div>
+                    <div id="axisWarning" style="display: none;" class="alert alert-warning">
+                        ⚠️ Maximum 4 axes sélectionnés. Décochez-en un avant de continuer.
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">← Retour Étape 1</button>
+                    <button class="btn btn-primary" id="validateAxesBtn" onclick="validateAxes()" disabled>Valider et passer à l\u2019étape 3 →</button>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 3 : PARAMÉTRAGE -->
+            <div class="step-content" id="step-3">
+                <div class="card">
+                    <div class="card-header">⚙️ Paramétrage du cycle</div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">Nombre de séances du cycle</div>
+                        <div class="slider-wrapper">
+                            <span style="color: #6c757d;">6 séances</span>
+                            <input type="range" id="sessionSlider" min="6" max="10" value="8" oninput="updateDistribution()">
+                            <span style="color: #6c757d;">10 séances</span>
+                            <div class="slider-value" id="sessionValue">8 séances</div>
+                        </div>
+                    </div>
+
+                    <div class="distribution-preview">
+                        <h4>📋 Aperçu de la distribution (temps réel)</h4>
+                        <table class="distribution-table" id="distributionTable">
+                            <thead>
+                                <tr>
+                                    <th>Axe prioritaire</th>
+                                    <th>Nombre de séances</th>
+                                </tr>
+                            </thead>
+                            <tbody id="distributionBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="goToStep(2)">← Retour Étape 2</button>
+                    <button class="btn btn-primary" onclick="generatePlanning()">Générer la planification →</button>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 4 : PLANIFICATION -->
+            <div class="step-content" id="step-4">
+                <div class="card">
+                    <div class="card-header">📅 Planification du cycle</div>
+                    <div style="overflow-x: auto;">
+                        <table id="planningTable">
+                            <thead>
+                                <tr>
+                                    <th>Séance</th>
+                                    <th>Axe prioritaire</th>
+                                    <th>Situation d\u2019apprentissage</th>
+                                    <th>Profil A (Débutant)</th>
+                                    <th>Profil B (Intermédiaire)</th>
+                                    <th>Profil C (Avancé)</th>
+                                    <th>Indicateur de passage (Indicatif)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="planningBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="summary-box" id="cycleSummary"></div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="goToStep(3)">← Retour Étape 3</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-success" onclick="exportCSV()">📥 Exporter en CSV</button>
+                        <button class="btn btn-success" onclick="window.print()">🖨️ Imprimer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let studentsData = [];
+        let classAnalysis = {};
+        let selectedAxes = [];
+        let sessionDistribution = {};
+
+        // Référentiel des observables
+        const OBSERVABLES = {
+            "OBS-01": {
+                name: "Gestion de la vitesse d\u2019élan",
+                code: "VE",
+                unit: "mètres (écart élan libre/réduit)"
+            },
+            "OBS-02": {
+                name: "Équilibre des trois bonds",
+                code: "EQ",
+                unit: "mètres (indice déséquilibre)"
+            },
+            "OBS-03": {
+                name: "Réception du 1er bond",
+                code: "R1",
+                unit: "observation qualitative"
+            }
+        };
+
+        // Référentiel des axes (extraits du référentiel TD2)
+        const AXES_REFERENCE = [
+            {
+                id: 1,
+                title: "Construire un enchaînement dynamique des trois bonds en conservant la vitesse horizontale",
+                observable: "OBS-02",
+                justification: "87,5% des élèves présentent un déséquilibre marqué (code EQ) et 75% une réception jambe tendue (code R1)",
+                situations: {
+                    A: "Enchaînement cloche-pied/foulée sur 3 bonds avec repères au sol tous les 2m",
+                    B: "Enchaînement 3 bonds sur élan 5 appuis avec analyse de la répartition",
+                    C: "Triple saut complet avec auto-correction de la répartition"
+                },
+                indicateurs: [
+                    "Réalise 3 bonds consécutifs sans rupture d\u2019équilibre (Indicatif)",
+                    "Le 2e bond représente au moins 25% de la distance totale (Indicatif)",
+                    "La réception du cloche-pied se fait avec un léger fléchissement (Indicatif)",
+                    "Enchaîne cloche-pied/foulée sans temps d\u2019arrêt visible (Indicatif)"
+                ]
+            },
+            {
+                id: 2,
+                title: "Gérer sa vitesse d\u2019élan pour optimiser la performance",
+                observable: "OBS-01",
+                justification: "79% des élèves obtiennent leur meilleure performance sur élan réduit (code VE)",
+                situations: {
+                    A: "Course d\u2019élan progressive sur 5 appuis avec accélération contrôlée",
+                    B: "Élan structuré 5-5-5 appuis avec travail de la préparation à l\u2019appel",
+                    C: "Élan complet étalonné avec repères visuels et analyse de la vitesse"
+                },
+                indicateurs: [
+                    "Accélère progressivement sur les 5 derniers appuis (Indicatif)",
+                    "La performance sur élan libre dépasse celle sur élan réduit de +0,5m minimum (Indicatif)",
+                    "Conserve une attitude de course haute sur les derniers appuis (Indicatif)",
+                    "Coordonne vitesse d\u2019élan et préparation à l\u2019impulsion (Indicatif)"
+                ]
+            },
+            {
+                id: 3,
+                title: "Coordonner vitesse d\u2019élan et enchaînement dynamique pour conserver la vitesse horizontale",
+                observable: "OBS-01",
+                justification: "Articulation entre vitesse et enchaînement après consolidation des axes 1 et 2",
+                situations: {
+                    A: "Triple saut sur élan 7-8 appuis avec analyse de la conservation de vitesse",
+                    B: "Élan complet avec travail du griffé actif au sol à chaque appui",
+                    C: "Triple saut complet avec optimisation de la trajectoire et du rythme"
+                },
+                indicateurs: [
+                    "La vitesse horizontale est conservée sur les 3 bonds (observation visuelle) (Indicatif)",
+                    "Les temps de suspension augmentent, les temps d\u2019appui diminuent (Indicatif)",
+                    "Le genou libre est actif et monte haut vers l\u2019avant à chaque impulsion (Indicatif)",
+                    "Le rythme des 3 impulsions est fluide et régulier (Indicatif)"
+                ]
+            },
+            {
+                id: 4,
+                title: "Anticiper les rebonds au sol et améliorer la qualité de réception dynamique",
+                observable: "OBS-03",
+                justification: "75% des élèves réceptionnent sur jambe tendue avec blocage (code R1)",
+                situations: {
+                    A: "Cloche-pied avec fléchissement contrôlé et reprise immédiate",
+                    B: "Enchaînement bonds avec travail du griffé actif au contact du sol",
+                    C: "Triple saut complet avec analyse de la qualité des réceptions"
+                },
+                indicateurs: [
+                    "La jambe d\u2019impulsion se fléchit légèrement à la réception (Indicatif)",
+                    "Le genou monte haut vers l\u2019avant avant chaque impulsion (Indicatif)",
+                    "Aucun blocage ou temps d\u2019arrêt visible lors du cloche-pied (Indicatif)",
+                    "Le pied griffe activement le sol à chaque contact (Indicatif)"
+                ]
+            },
+            {
+                id: 5,
+                title: "Intérioriser le rythme des trois impulsions pour fluidifier l\u2019enchaînement",
+                observable: "OBS-02",
+                justification: "87,5% des élèves présentent un 2e bond beaucoup trop court (code EQ) — rupture rythmique marquée",
+                situations: {
+                    A: "Enchaînement 3 bonds en comptant à voix haute le rythme (1-2-3)",
+                    B: "Triple saut avec verbalisation du rythme par un observateur",
+                    C: "Triple saut complet avec intériorisation du rythme optimal personnel"
+                },
+                indicateurs: [
+                    "Respecte un rythme régulier entre les 3 impulsions (Indicatif)",
+                    "Verbalise ou compte mentalement le rythme pendant l\u2019action (Indicatif)",
+                    "La durée des 3 bonds est équilibrée (pas de bond trop court) (Indicatif)",
+                    "Reproduit le même rythme sur plusieurs essais consécutifs (Indicatif)"
+                ]
+            },
+            {
+                id: 6,
+                title: "Repérer la répartition des bonds dans l\u2019espace et les variations de rythme",
+                observable: "OBS-02",
+                justification: "Compréhension de la structure du triple saut par observation de pairs",
+                situations: {
+                    A: "Observer un camarade et mesurer les 3 bonds avec un décamètre",
+                    B: "Analyser la répartition des bonds et proposer des remédiations",
+                    C: "Co-évaluation avec analyse croisée de plusieurs sauts"
+                },
+                indicateurs: [
+                    "Mesure correctement les 3 distances avec le décamètre (Indicatif)",
+                    "Identifie le bond le plus court chez le camarade observé (Indicatif)",
+                    "Propose une remédiation pertinente basée sur l\u2019observation (Indicatif)",
+                    "Utilise les données mesurées pour améliorer sa propre prestation (Indicatif)"
+                ]
+            }
+        ];
+
+        // Référentiel des SA
+        const SA_REFERENCE = {
+            "SA-C1": "Enchaînement cloche-pied/foulée bondissante sur élan réduit avec repères au sol",
+            "SA-B1": "Élan progressif 5-5-5 avec travail de la préparation à l\u2019appel",
+            "SA-A1": "Triple saut complet avec analyse de la répartition des bonds et auto-évaluation"
+        };
+
+        // Fonction d'ajout d'une ligne élève
+        function addStudentRow() {
+            const row = document.createElement('div');
+            row.className = 'student-row';
+            row.innerHTML = `
+                <input type="text" placeholder="Prénom de l\u2019élève" class="student-name">
+                <input type="number" min="0" max="10" step="0.1" placeholder="OBS-01 (/10)" class="obs1">
+                <input type="number" min="0" max="10" step="0.1" placeholder="OBS-02 (/10)" class="obs2">
+                <input type="number" min="0" max="10" step="0.1" placeholder="OBS-03 (/10)" class="obs3">
+                <button class="btn btn-danger" onclick="removeStudentRow(this)">✕</button>
+            `;
+            document.getElementById('studentsList').appendChild(row);
+        }
+
+        // Fonction de suppression d'une ligne élève
+        function removeStudentRow(btn) {
+            const rows = document.getElementById('studentsList').children;
+            if (rows.length > 1) {
+                btn.parentElement.remove();
+            }
+        }
+
+        // Import CSV avec recherche de l'en-tête (Règle P2)
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const text = event.target.result;
+                const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+                
+                // Rechercher la ligne contenant "Nom_Eleve" (Règle P2)
+                let headerIndex = -1;
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].includes('Nom_Eleve') || lines[i].includes('Prénom') || lines[i].includes('Prenom')) {
+                        headerIndex = i;
+                        break;
+                    }
+                }
+
+                if (headerIndex === -1) {
+                    alert("En-tête non trouvé. Assurez-vous que le fichier contient une colonne 'Nom_Eleve' ou 'Prénom'.");
+                    return;
+                }
+
+                const headers = lines[headerIndex].split(/[;,\t]/).map(h => h.trim());
+                
+                // Trouver les colonnes (Règle P3 : codes métier prioritaires)
+                let nameCol = -1, obs1Col = -1, obs2Col = -1, obs3Col = -1;
+                
+                // Recherche colonne nom
+                for (let i = 0; i < headers.length; i++) {
+                    const h = headers[i].toLowerCase();
+                    if (h.includes('nom') || h.includes('prenom') || h.includes('prénom') || h.includes('eleve') || h.includes('élève')) {
+                        nameCol = i;
+                        break;
+                    }
+                }
+
+                // Recherche colonnes observables (Priorité codes métier)
+                for (let i = 0; i < headers.length; i++) {
+                    const h = headers[i];
+                    if (h.includes('OBS01') || h.includes('VE')) obs1Col = i;
+                    if (h.includes('OBS02') || h.includes('EQ')) obs2Col = i;
+                    if (h.includes('OBS03') || h.includes('R1')) obs3Col = i;
+                }
+
+                // Si pas trouvé, chercher colonnes numériques
+                if (obs1Col === -1) {
+                    for (let i = 0; i < headers.length; i++) {
+                        if (headers[i].match(/OBS.?1/i)) obs1Col = i;
+                    }
+                }
+                if (obs2Col === -1) {
+                    for (let i = 0; i < headers.length; i++) {
+                        if (headers[i].match(/OBS.?2/i)) obs2Col = i;
+                    }
+                }
+                if (obs3Col === -1) {
+                    for (let i = 0; i < headers.length; i++) {
+                        if (headers[i].match(/OBS.?3/i)) obs3Col = i;
+                    }
+                }
+
+                if (nameCol === -1 || obs1Col === -1 || obs2Col === -1 || obs3Col === -1) {
+                    alert("Colonnes requises non trouvées. Vérifiez le format du CSV.");
+                    return;
+                }
+
+                // Vider la liste actuelle
+                document.getElementById('studentsList').innerHTML = '';
+
+                // Importer les données
+                let imported = 0;
+                for (let i = headerIndex + 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    if (!line || line.toLowerCase().includes('bilan')) continue;
+
+                    const values = line.split(/[;,\t]/).map(v => v.trim());
+                    if (values.length <= Math.max(nameCol, obs1Col, obs2Col, obs3Col)) continue;
+
+                    const name = values[nameCol];
+                    let obs1 = values[obs1Col];
+                    let obs2 = values[obs2Col];
+                    let obs3 = values[obs3Col];
+
+                    // Convertir codes lettres en notes (Règle P3)
+                    obs1 = convertCodeToScore(obs1);
+                    obs2 = convertCodeToScore(obs2);
+                    obs3 = convertCodeToScore(obs3);
+
+                    if (name && obs1 !== '' && obs2 !== '' && obs3 !== '') {
+                        const row = document.createElement('div');
+                        row.className = 'student-row';
+                        row.innerHTML = `
+                            <input type="text" value="${name}" class="student-name">
+                            <input type="number" value="${obs1}" min="0" max="10" step="0.1" class="obs1">
+                            <input type="number" value="${obs2}" min="0" max="10" step="0.1" class="obs2">
+                            <input type="number" value="${obs3}" min="0" max="10" step="0.1" class="obs3">
+                            <button class="btn btn-danger" onclick="removeStudentRow(this)">✕</button>
+                        `;
+                        document.getElementById('studentsList').appendChild(row);
+                        imported++;
+                    }
+                }
+
+                alert(`${imported} élèves importés avec succès !`);
+            };
+            reader.readAsText(file);
+        });
+
+        // Convertir code lettre en note /10
+        function convertCodeToScore(value) {
+            if (!value) return '';
+            value = value.toString().toUpperCase().trim();
+            
+            // Si déjà numérique, retourner tel quel
+            if (!isNaN(parseFloat(value))) {
+                return parseFloat(value);
+            }
+            
+            // Mapper A/B/C vers 3/6/9 (ATTENTION : A = 3 car A = débutant en triple saut)
+            if (value === 'A') return 3;
+            if (value === 'B') return 6;
+            if (value === 'C') return 9;
+            
+            return '';
+        }
+
+        // Analyser les données
+        function analyzeData() {
+            studentsData = [];
+            const rows = document.getElementById('studentsList').children;
+            
+            for (let row of rows) {
+                const name = row.querySelector('.student-name').value.trim();
+                const obs1 = parseFloat(row.querySelector('.obs1').value);
+                const obs2 = parseFloat(row.querySelector('.obs2').value);
+                const obs3 = parseFloat(row.querySelector('.obs3').value);
+
+                if (!name || isNaN(obs1) || isNaN(obs2) || isNaN(obs3)) {
+                    alert("Veuillez remplir tous les champs pour chaque élève.");
+                    return;
+                }
+
+                if (obs1 < 0 || obs1 > 10 || obs2 < 0 || obs2 > 10 || obs3 < 0 || obs3 > 10) {
+                    alert("Les notes doivent être entre 0 et 10.");
+                    return;
+                }
+
+                const moyenne = (obs1 + obs2 + obs3) / 3;
+                const note20 = (moyenne / 10) * 20;
+                
+                // Profil global
+                let profilGlobal;
+                if (moyenne >= 7.0) profilGlobal = 'C'; // Avancé
+                else if (moyenne >= 4.0) profilGlobal = 'B'; // Intermédiaire
+                else profilGlobal = 'A'; // Débutant
+
+                // Profil détaillé par observable
+                const profilObs1 = obs1 >= 7.0 ? 'C' : (obs1 >= 4.0 ? 'B' : 'A');
+                const profilObs2 = obs2 >= 7.0 ? 'C' : (obs2 >= 4.0 ? 'B' : 'A');
+                const profilObs3 = obs3 >= 7.0 ? 'C' : (obs3 >= 4.0 ? 'B' : 'A');
+                const profilDetail = `${profilObs1}/${profilObs2}/${profilObs3}`;
+
+                // Identifier lacunes (< 4.0)
+                const lacunes = [];
+                if (obs1 < 4.0) lacunes.push({obs: 'OBS-01', score: obs1});
+                if (obs2 < 4.0) lacunes.push({obs: 'OBS-02', score: obs2});
+                if (obs3 < 4.0) lacunes.push({obs: 'OBS-03', score: obs3});
+                
+                // Trier lacunes par score croissant (L1 = plus urgente)
+                lacunes.sort((a, b) => a.score - b.score);
+                
+                const lacuneText = lacunes.length > 0 
+                    ? lacunes.map((l, i) => `L${i+1} — ${OBSERVABLES[l.obs].name} : ${l.score.toFixed(1)}/10`).join(' | ')
+                    : "Aucune lacune identifiée";
+
+                // Axe prioritaire personnalisé
+                let axePrio = "Consolidation générale des acquis";
+                if (lacunes.length > 0) {
+                    const lacuneDominante = lacunes[0].obs;
+                    // Trouver l'axe correspondant à l'observable lacunaire
+                    const axeCorrespondant = AXES_REFERENCE.find(a => a.observable === lacuneDominante);
+                    if (axeCorrespondant) {
+                        axePrio = axeCorrespondant.title;
+                    }
+                }
+
+                // SA recommandée
+                let saRecommandee;
+                if (profilGlobal === 'A') saRecommandee = 'SA-C1';
+                else if (profilGlobal === 'B') saRecommandee = 'SA-B1';
+                else saRecommandee = 'SA-A1';
+
+                studentsData.push({
+                    name, obs1, obs2, obs3, moyenne, note20,
+                    profilGlobal, profilDetail, lacuneText, axePrio, saRecommandee
+                });
+            }
+
+            // Tri par moyenne décroissante et attribution rang
+            studentsData.sort((a, b) => b.moyenne - a.moyenne);
+            studentsData.forEach((s, i) => s.rang = i + 1);
+
+            // Analyser la classe
+            analyzeClass();
+
+            // Afficher résultats
+            displayResults();
+            document.getElementById('diagnosticResults').style.display = 'block';
+        }
+
+        // Analyser la classe
+        function analyzeClass() {
+            const total = studentsData.length;
+            const countA = studentsData.filter(s => s.profilGlobal === 'A').length;
+            const countB = studentsData.filter(s => s.profilGlobal === 'B').length;
+            const countC = studentsData.filter(s => s.profilGlobal === 'C').length;
+
+            const moyenneClasse = studentsData.reduce((acc, s) => acc + s.moyenne, 0) / total;
+            const moyenne20 = (moyenneClasse / 10) * 20;
+
+            // Moyenne par observable
+            const moyObs1 = studentsData.reduce((acc, s) => acc + s.obs1, 0) / total;
+            const moyObs2 = studentsData.reduce((acc, s) => acc + s.obs2, 0) / total;
+            const moyObs3 = studentsData.reduce((acc, s) => acc + s.obs3, 0) / total;
+
+            // Décision dominante
+            let decision;
+            if (countA > countB && countA > countC) {
+                decision = "Classe débutante — Priorité fondamentaux";
+            } else if (countB > countA && countB > countC) {
+                decision = "Classe intermédiaire — Différenciation A/B";
+            } else {
+                decision = "Classe avancée — Approfondissement et tutorat";
+            }
+
+            classAnalysis = {
+                total, countA, countB, countC,
+                moyenneClasse, moyenne20,
+                moyObs1, moyObs2, moyObs3,
+                decision
+            };
+        }
+
+        // Afficher résultats
+        function displayResults() {
+            // Stats globales
+            const statsHtml = `
+                <div class="stat-card">
+                    <div class="stat-value">${classAnalysis.total}</div>
+                    <div class="stat-label">Élèves</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${classAnalysis.moyenneClasse.toFixed(2)}/10</div>
+                    <div class="stat-label">Moyenne classe</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${classAnalysis.moyenne20.toFixed(2)}/20</div>
+                    <div class="stat-label">Note /20</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #f44336 0%, #e91e63 100%);">
+                    <div class="stat-value">${classAnalysis.countA} (${((classAnalysis.countA/classAnalysis.total)*100).toFixed(0)}%)</div>
+                    <div class="stat-label">Profil A (Débutant)</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);">
+                    <div class="stat-value">${classAnalysis.countB} (${((classAnalysis.countB/classAnalysis.total)*100).toFixed(0)}%)</div>
+                    <div class="stat-label">Profil B (Intermédiaire)</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #4caf50 0%, #8bc34a 100%);">
+                    <div class="stat-value">${classAnalysis.countC} (${((classAnalysis.countC/classAnalysis.total)*100).toFixed(0)}%)</div>
+                    <div class="stat-label">Profil C (Avancé)</div>
+                </div>
+            `;
+            document.getElementById('statsGrid').innerHTML = statsHtml;
+
+            // Analyse par observable
+            let obsAnalysisHtml = '<h4 style="margin: 20px 0 10px 0; color: #495057;">📈 Analyse par observable</h4>';
+            const observables = [
+                {name: 'OBS-01 — Gestion vitesse élan', moy: classAnalysis.moyObs1},
+                {name: 'OBS-02 — Équilibre des bonds', moy: classAnalysis.moyObs2},
+                {name: 'OBS-03 — Réception 1er bond', moy: classAnalysis.moyObs3}
+            ];
+
+            observables.forEach(obs => {
+                let status, color, sa;
+                if (obs.moy < 4.0) {
+                    status = "Lacune collective → SA prioritaire à renforcer";
+                    color = "#f44336";
+                    sa = SA_REFERENCE["SA-C1"];
+                } else if (obs.moy < 7.0) {
+                    status = "En cours → Consolider";
+                    color = "#ff9800";
+                    sa = SA_REFERENCE["SA-B1"];
+                } else {
+                    status = "Bon niveau → Approfondir";
+                    color = "#4caf50";
+                    sa = SA_REFERENCE["SA-A1"];
+                }
+
+                obsAnalysisHtml += `
+                    <div style="background: #f8f9fa; padding: 15px; border-left: 4px solid ${color}; margin-bottom: 10px; border-radius: 4px;">
+                        <strong>${obs.name}</strong> : ${obs.moy.toFixed(2)}/10<br>
+                        <span style="color: ${color}; font-weight: 600;">${status}</span><br>
+                        <small style="color: #6c757d;">SA recommandée : ${sa}</small>
+                    </div>
+                `;
+            });
+            document.getElementById('observableAnalysis').innerHTML = obsAnalysisHtml;
+
+            // Groupes de besoin
+            let groupsHtml = '<h4 style="margin: 20px 0 10px 0; color: #495057;">👥 Groupes de besoin</h4>';
+            groupsHtml += `
+                <div style="background: #ffebee; padding: 15px; margin-bottom: 10px; border-radius: 4px;">
+                    <strong>Profil A (Débutant)</strong> : ${classAnalysis.countA} élèves<br>
+                    <small>SA associée : ${SA_REFERENCE["SA-C1"]}</small>
+                </div>
+                <div style="background: #fff3e0; padding: 15px; margin-bottom: 10px; border-radius: 4px;">
+                    <strong>Profil B (Intermédiaire)</strong> : ${classAnalysis.countB} élèves<br>
+                    <small>SA associée : ${SA_REFERENCE["SA-B1"]}</small>
+                </div>
+                <div style="background: #e8f5e9; padding: 15px; margin-bottom: 10px; border-radius: 4px;">
+                    <strong>Profil C (Avancé)</strong> : ${classAnalysis.countC} élèves<br>
+                    <small>SA associée : ${SA_REFERENCE["SA-A1"]}</small>
+                </div>
+            `;
+            document.getElementById('groupsAnalysis').innerHTML = groupsHtml;
+
+            // Décision dominante
+            document.getElementById('classDecision').innerHTML = `
+                <div class="alert alert-info" style="margin-top: 20px;">
+                    <strong>🎯 Décision dominante :</strong> ${classAnalysis.decision}
+                </div>
+            `;
+
+            // Tableau individuel
+            let tableHtml = '';
+            studentsData.forEach(s => {
+                const rowClass = `profile-${s.profilGlobal}`;
+                tableHtml += `
+                    <tr class="${rowClass}">
+                        <td>${s.rang}</td>
+                        <td><strong>${s.name}</strong></td>
+                        <td>${s.obs1.toFixed(1)}</td>
+                        <td>${s.obs2.toFixed(1)}</td>
+                        <td>${s.obs3.toFixed(1)}</td>
+                        <td><strong>${s.moyenne.toFixed(2)}</strong></td>
+                        <td><strong>${s.note20.toFixed(2)}</strong></td>
+                        <td><strong>${s.profilGlobal}</strong></td>
+                        <td>${s.profilDetail}</td>
+                        <td style="font-size: 0.9em;">${s.lacuneText}</td>
+                        <td style="font-size: 0.9em;">${s.axePrio}</td>
+                        <td><strong>${s.saRecommandee}</strong></td>
+                    </tr>
+                `;
+            });
+            document.getElementById('resultsBody').innerHTML = tableHtml;
+        }
+
+        // Navigation entre étapes
+        function goToStep(stepNum) {
+            // Masquer tous les contenus
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.progress-step').forEach(el => {
+                el.classList.remove('active');
+                el.classList.remove('completed');
+            });
+
+            // Afficher le contenu de l'étape
+            document.getElementById(`step-${stepNum}`).classList.add('active');
+            
+            // Mettre à jour la barre de progression
+            for (let i = 1; i <= 4; i++) {
+                if (i < stepNum) {
+                    document.getElementById(`progress-${i}`).classList.add('completed');
+                } else if (i === stepNum) {
+                    document.getElementById(`progress-${i}`).classList.add('active');
+                }
+            }
+
+            // Actions spécifiques par étape
+            if (stepNum === 2) {
+                generateAxisSelector();
+            } else if (stepNum === 3) {
+                updateDistribution();
+            }
+        }
+
+        // Générer le sélecteur d'axes
+        function generateAxisSelector() {
+            // Calculer la pertinence de chaque axe
+            const axesWithPertinence = AXES_REFERENCE.map(axis => {
+                // Compter combien d'élèves ont une lacune sur l'observable associé
+                let lacuneCount = 0;
+                studentsData.forEach(s => {
+                    if (axis.observable === 'OBS-01' && s.obs1 < 4.0) lacuneCount++;
+                    if (axis.observable === 'OBS-02' && s.obs2 < 4.0) lacuneCount++;
+                    if (axis.observable === 'OBS-03' && s.obs3 < 4.0) lacuneCount++;
+                });
+                const pertinence = Math.round((lacuneCount / studentsData.length) * 100);
+                return {...axis, pertinence};
+            });
+
+            // Trier par pertinence décroissante
+            axesWithPertinence.sort((a, b) => b.pertinence - a.pertinence);
+
+            // Générer HTML
+            let html = '';
+            axesWithPertinence.forEach(axis => {
+                html += `
+                    <div class="axis-item" onclick="toggleAxis(${axis.id}, event)">
+                        <div class="axis-header">
+                            <input type="checkbox" id="axis-${axis.id}" onchange="checkAxisLimit()">
+                            <div class="axis-title">AXE ${axis.id} — ${axis.title}</div>
+                            <div class="pertinence-badge">Pertinence : ${axis.pertinence}%</div>
+                        </div>
+                        <div class="axis-details">
+                            <strong>Observable associé :</strong> ${OBSERVABLES[axis.observable].name}<br>
+                            <strong>Justification :</strong> ${axis.justification}
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('axisSelector').innerHTML = html;
+        }
+
+        // Toggle sélection axe
+        function toggleAxis(axisId, event) {
+            if (event.target.type === 'checkbox') return; // Ne pas déclencher si on clique sur la checkbox
+            const checkbox = document.getElementById(`axis-${axisId}`);
+            checkbox.checked = !checkbox.checked;
+            checkAxisLimit();
+        }
+
+        // Vérifier limite axes
+        function checkAxisLimit() {
+            const checkboxes = document.querySelectorAll('#axisSelector input[type="checkbox"]');
+            const checked = Array.from(checkboxes).filter(cb => cb.checked);
+            
+            // Mettre à jour classe selected
+            checkboxes.forEach(cb => {
+                const item = cb.closest('.axis-item');
+                if (cb.checked) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+
+            // Afficher warning si > 4
+            if (checked.length > 4) {
+                document.getElementById('axisWarning').style.display = 'block';
+                document.getElementById('validateAxesBtn').disabled = true;
+            } else if (checked.length >= 3) {
+                document.getElementById('axisWarning').style.display = 'none';
+                document.getElementById('validateAxesBtn').disabled = false;
+            } else {
+                document.getElementById('axisWarning').style.display = 'none';
+                document.getElementById('validateAxesBtn').disabled = true;
+            }
+        }
+
+        // Valider axes
+        function validateAxes() {
+            const checkboxes = document.querySelectorAll('#axisSelector input[type="checkbox"]:checked');
+            selectedAxes = Array.from(checkboxes).map(cb => {
+                const axisId = parseInt(cb.id.replace('axis-', ''));
+                return AXES_REFERENCE.find(a => a.id === axisId);
+            });
+
+            goToStep(3);
+        }
+
+        // Mettre à jour distribution
+        function updateDistribution() {
+            const sessions = parseInt(document.getElementById('sessionSlider').value);
+            document.getElementById('sessionValue').textContent = `${sessions} séances`;
+
+            // Calculer distribution
+            const numAxes = selectedAxes.length;
+            const basePerAxis = Math.floor(sessions / numAxes);
+            const remainder = sessions % numAxes;
+
+            sessionDistribution = {};
+            selectedAxes.forEach((axis, index) => {
+                // Distribuer le reste aux axes les plus pertinents (premiers dans la liste)
+                sessionDistribution[axis.id] = basePerAxis + (index < remainder ? 1 : 0);
+            });
+
+            // Afficher tableau
+            let html = '';
+            selectedAxes.forEach(axis => {
+                html += `
+                    <tr>
+                        <td><strong>AXE ${axis.id}</strong> — ${axis.title}</td>
+                        <td style="text-align: center; font-size: 1.2em; font-weight: bold; color: #667eea;">
+                            ${sessionDistribution[axis.id]} séances
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('distributionBody').innerHTML = html;
+        }
+
+        // Générer planification
+        function generatePlanning() {
+            const totalSessions = parseInt(document.getElementById('sessionSlider').value);
+            let html = '';
+            let sessionNum = 1;
+
+            // Générer les séances selon la distribution
+            selectedAxes.forEach(axis => {
+                const numSessions = sessionDistribution[axis.id];
+                
+                for (let i = 0; i < numSessions; i++) {
+                    const indicator = axis.indicateurs[i % axis.indicateurs.length];
+                    
+                    html += `
+                        <tr>
+                            <td style="text-align: center; font-weight: bold;">${sessionNum}</td>
+                            <td><strong>AXE ${axis.id}</strong> — ${axis.title}</td>
+                            <td>${axis.situations.A}</td>
+                            <td>${axis.situations.B}</td>
+                            <td>${axis.situations.C}</td>
+                            <td>${indicator}</td>
+                        </tr>
+                    `;
+                    sessionNum++;
+                }
+            });
+
+            document.getElementById('planningBody').innerHTML = html;
+
+            // Résumé du cycle
+            const axesText = selectedAxes.map(a => `AXE ${a.id} (${sessionDistribution[a.id]} séances)`).join(' · ');
+            const summaryHtml = `
+                <h4>📊 RÉSUMÉ DU CYCLE</h4>
+                <div class="summary-item">
+                    <div class="summary-label">Volume total</div>
+                    <div class="summary-value">${totalSessions} séances</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Axes travaillés</div>
+                    <div class="summary-value">${selectedAxes.length} axes</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Distribution</div>
+                    <div class="summary-value">${axesText}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Profils ciblés</div>
+                    <div class="summary-value">${classAnalysis.countA} Profil A · ${classAnalysis.countB} Profil B · ${classAnalysis.countC} Profil C</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Décision dominante</div>
+                    <div class="summary-value">${classAnalysis.decision}</div>
+                </div>
+            `;
+            document.getElementById('cycleSummary').innerHTML = summaryHtml;
+
+            goToStep(4);
+        }
+
+        // Export CSV
+        function exportCSV() {
+            let csv = "Séance,Axe,Situation A,Situation B,Situation C,Indicateur\n";
+            
+            const rows = document.getElementById('planningBody').children;
+            for (let row of rows) {
+                const cells = row.children;
+                const line = Array.from(cells).map(c => `"${c.textContent.trim()}"`).join(',');
+                csv += line + '\n';
+            }
+
+            const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'planification_triple_saut_DI-TRI.csv';
+            link.click();
+        }
+
+        // Initialisation
+        window.onload = function() {
+            // Ajouter 3 lignes par défaut
+            addStudentRow();
+            addStudentRow();
+        };
+    </script>
+</body>
+</html>
