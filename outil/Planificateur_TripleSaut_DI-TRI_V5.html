@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planificateur Triple Saut — CRMEF Inzegane</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Barlow+Condensed:wght@400;600;700;900&display=swap');
+
+:root {
+  --track: #C85A1A;
+  --track-d: #8B3A0A;
+  --gold: #F5C518;
+  --gold-d: #C49A00;
+  --sand: #E8D5A3;
+  --ink: #0F0F0F;
+  --white: #FFFFFF;
+  --vert: #2D6A1A; --vert-l: #EAF3DE; --vert-t: #1E6B0A;
+  --amber: #C47A00; --amber-l: #FAEEDA; --amber-t: #7A4F00;
+  --rouge: #C0392B; --rouge-l: #FCEBEB; --rouge-t: #8B1A1A;
+  --bleu: #1F4E79;
+  --gris: #F0F1F3;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  font-family: 'Barlow', sans-serif;
+  background: #0F0F0F;
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ══ ÉCRAN D'ACCUEIL ══════════════════════════════════════════════════════════ */
+#screen-accueil {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Piste d'athlétisme SVG en fond */
+.piste-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(200,90,26,0.07) 0px,
+      rgba(200,90,26,0.07) 2px,
+      transparent 2px,
+      transparent 80px
+    ),
+    linear-gradient(180deg, #0F0F0F 0%, #1A1008 50%, #0F0F0F 100%);
+}
+.piste-lanes {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 58px,
+      rgba(200,90,26,0.15) 58px,
+      rgba(200,90,26,0.15) 60px
+    );
+}
+
+/* Jumper silhouette */
+.jumper-bg {
+  position: fixed;
+  right: -30px;
+  bottom: 0;
+  z-index: 0;
+  opacity: 0.04;
+  width: 600px;
+  pointer-events: none;
+}
+
+.accueil-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+/* Header badge */
+.badge-crmef {
+  background: rgba(200,90,26,0.15);
+  border: 1px solid rgba(200,90,26,0.4);
+  border-radius: 100px;
+  padding: 6px 18px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--track);
+  margin-bottom: 28px;
+  animation: fadeDown 0.6s ease both;
+}
+
+/* Titre principal */
+.accueil-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(52px, 10vw, 96px);
+  letter-spacing: 0.04em;
+  color: var(--white);
+  line-height: 0.9;
+  text-align: center;
+  animation: fadeDown 0.7s ease 0.1s both;
+}
+.accueil-title span {
+  color: var(--track);
+  display: block;
+}
+.accueil-title .sub {
+  font-size: clamp(20px, 4vw, 36px);
+  color: var(--gold);
+  display: block;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+/* Subtitle */
+.accueil-sub {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  margin: 18px 0 48px;
+  animation: fadeDown 0.7s ease 0.2s both;
+}
+
+/* ── Carte de sélection ── */
+.select-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 36px 40px;
+  width: 100%;
+  max-width: 560px;
+  backdrop-filter: blur(8px);
+  animation: fadeUp 0.7s ease 0.3s both;
+}
+
+.select-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.select-label::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 2px;
+  background: var(--track);
+}
+
+/* Grille profs */
+.profs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.prof-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 14px 12px;
+  cursor: pointer;
+  transition: all .18s;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+.prof-btn::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--track);
+  transform: scaleY(0);
+  transition: transform .18s;
+}
+.prof-btn:hover { border-color: var(--track); background: rgba(200,90,26,0.1); }
+.prof-btn:hover::before { transform: scaleY(1); }
+.prof-btn.active { border-color: var(--gold); background: rgba(245,197,24,0.08); }
+.prof-btn.active::before { background: var(--gold); transform: scaleY(1); }
+
+.prof-btn .prof-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+.prof-btn .prof-code {
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+/* Classes chips */
+.classes-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+.classe-chip {
+  flex: 1;
+  min-width: 80px;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(255,255,255,0.04);
+  transition: all .15s;
+}
+.classe-chip:hover { border-color: var(--gold); background: rgba(245,197,24,0.06); }
+.classe-chip.active { border-color: var(--gold); background: rgba(245,197,24,0.12); }
+
+.classe-chip .cl-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  color: var(--white);
+  line-height: 1;
+}
+.classe-chip .cl-sub {
+  font-size: 9px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+.classe-chip.active .cl-label { color: var(--gold); }
+
+/* Bouton lancer */
+.btn-lancer {
+  width: 100%;
+  background: linear-gradient(135deg, #555, #333);
+  border: none;
+  border-radius: 10px;
+  padding: 18px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.4);
+  cursor: not-allowed;
+  transition: all .2s;
+  position: relative;
+  overflow: hidden;
+}
+.btn-lancer.ready {
+  background: linear-gradient(135deg, var(--track), var(--track-d));
+  color: var(--white);
+  cursor: pointer;
+  box-shadow: 0 4px 24px rgba(200,90,26,0.35);
+}
+.btn-lancer.ready:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(200,90,26,0.5);
+}
+.btn-lancer::after {
+  content: '→';
+  margin-left: 10px;
+  font-size: 20px;
+}
+
+/* ── Disclaimer ── */
+.disclaimer {
+  font-size: 11px;
+  color: rgba(255,255,255,0.2);
+  text-align: center;
+  margin-top: 24px;
+  animation: fadeUp 0.8s ease 0.5s both;
+}
+
+/* ══ PLANIFICATEUR ════════════════════════════════════════════════════════════ */
+#screen-planner {
+  display: none;
+  min-height: 100vh;
+  background: #F0F1F3;
+}
+
+/* Header planner */
+.planner-header {
+  background: var(--ink);
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+}
+.planner-header-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 28px;
+}
+.planner-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  color: var(--track);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.planner-context {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ctx-pill {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 100px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.04em;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+.ctx-pill.gold { background: rgba(245,197,24,0.15); border-color: rgba(245,197,24,0.4); color: var(--gold); }
+.ctx-pill.orange { background: rgba(200,90,26,0.2); border-color: rgba(200,90,26,0.4); color: #FF8C52; }
+
+.btn-retour {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: rgba(255,255,255,0.6);
+  font-family: 'Barlow', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: 0.04em;
+}
+.btn-retour:hover { background: rgba(255,255,255,0.12); color: white; }
+
+/* Étapes nav */
+.steps-nav {
+  display: flex;
+  background: rgba(0,0,0,0.3);
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.step-tab {
+  flex: 1;
+  padding: 10px 8px;
+  text-align: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.step-tab .step-n {
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+.step-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.step-tab.active .step-n { background: var(--gold); color: var(--ink); }
+.step-tab.done { color: rgba(255,255,255,0.5); }
+.step-tab.done .step-n { background: var(--vert); color: white; }
+
+/* Contenu principal */
+.planner-body {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 20px 80px;
+}
+
+/* Section title */
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-title .num {
+  background: var(--track);
+  color: white;
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.section-sub {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 24px;
+  padding-left: 48px;
+}
+
+/* Cards */
+.card {
+  background: white;
+  border-radius: 12px;
+  border: 1.5px solid #E0E4EA;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.card-head {
+  background: var(--ink);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-head-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: white;
+}
+.card-body { padding: 20px; }
+
+/* Infos générales form */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+.form-field label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 5px;
+}
+.form-field input, .form-field select {
+  width: 100%;
+  border: 1.5px solid #D0D5DD;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+  background: #FAFBFC;
+  transition: border-color .15s;
+}
+.form-field input:focus, .form-field select:focus {
+  outline: none; border-color: var(--track); background: white;
+}
+
+/* Axes selection */
+.axes-list { display: flex; flex-direction: column; gap: 10px; }
+.axe-item {
+  border: 1.5px solid #E0E4EA;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all .15s;
+  background: #FAFBFC;
+}
+.axe-item:hover { border-color: var(--track); background: #FEF5F0; }
+.axe-item.selected { border-color: var(--track); background: #FEF5F0; }
+.axe-item.selected .axe-check { background: var(--track); border-color: var(--track); }
+.axe-item.selected .axe-check::after { opacity: 1; }
+
+.axe-check {
+  width: 22px; height: 22px; flex-shrink: 0;
+  border: 2px solid #D0D5DD;
+  border-radius: 6px;
+  position: relative;
+  transition: all .15s;
+}
+.axe-check::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  color: white;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity .12s;
+}
+
+.axe-info { flex: 1; }
+.axe-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.axe-desc { font-size: 12px; color: #666; margin-top: 2px; line-height: 1.4; }
+.axe-obs {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(200,90,26,0.1);
+  color: var(--track);
+  white-space: nowrap;
+}
+
+/* Slider séances */
+.slider-wrap {
+  padding: 10px 0 24px;
+}
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.slider-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 48px;
+  color: var(--track);
+  min-width: 60px;
+  text-align: center;
+  line-height: 1;
+}
+.slider-label { font-size: 13px; color: #666; }
+input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--track) var(--pct,50%), #D0D5DD var(--pct,50%));
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--track);
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(200,90,26,0.4);
+  cursor: pointer;
+}
+
+/* Table planification */
+.plan-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.plan-table th {
+  background: var(--ink);
+  color: white;
+  padding: 10px 12px;
+  text-align: left;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.plan-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #EEF0F3;
+  vertical-align: top;
+}
+.plan-table tr:last-child td { border-bottom: none; }
+.plan-table tr:nth-child(even) td { background: #FAFBFC; }
+
+.seance-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  color: var(--track);
+  width: 48px;
+  text-align: center;
+}
+.seance-type {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+.type-di { background: var(--vert-l); color: var(--vert-t); }
+.type-en { background: rgba(200,90,26,0.1); color: var(--track-d); }
+.type-es { background: rgba(31,78,121,0.1); color: var(--bleu); }
+.seance-contenu { font-size: 12px; color: #444; line-height: 1.5; }
+.seance-axe {
+  font-size: 11px;
+  color: var(--track);
+  font-weight: 700;
+  margin-top: 3px;
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.04em;
+}
+
+/* Profils résumé */
+.profils-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.profil-chip {
+  flex: 1;
+  border-radius: 10px;
+  padding: 14px 12px;
+  text-align: center;
+  border: 1.5px solid;
+}
+.profil-chip.a { background: var(--vert-l); border-color: var(--vert); }
+.profil-chip.b { background: var(--amber-l); border-color: var(--amber); }
+.profil-chip.c { background: var(--rouge-l); border-color: var(--rouge); }
+.profil-chip .pct {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  line-height: 1;
+}
+.profil-chip.a .pct { color: var(--vert-t); }
+.profil-chip.b .pct { color: var(--amber-t); }
+.profil-chip.c .pct { color: var(--rouge-t); }
+.profil-chip .plabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+.profil-chip.a .plabel { color: var(--vert-t); }
+.profil-chip.b .plabel { color: var(--amber-t); }
+.profil-chip.c .plabel { color: var(--rouge-t); }
+
+/* Boutons navigation */
+.nav-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+  justify-content: flex-end;
+}
+.btn-next {
+  background: linear-gradient(135deg, var(--track), var(--track-d));
+  border: none;
+  border-radius: 10px;
+  padding: 14px 28px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  color: white;
+  cursor: pointer;
+  transition: all .18s;
+  box-shadow: 0 3px 12px rgba(200,90,26,0.3);
+}
+.btn-next:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(200,90,26,0.4); }
+.btn-prev {
+  background: white;
+  border: 1.5px solid #D0D5DD;
+  border-radius: 10px;
+  padding: 14px 24px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-prev:hover { border-color: var(--track); color: var(--track); }
+
+.btn-print-plan {
+  background: var(--bleu);
+  border: none;
+  border-radius: 10px;
+  padding: 14px 24px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  color: white;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-print-plan:hover { opacity: .85; }
+
+/* ── Animations ── */
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Fiche terrain ── */
+.terrain-table { width:100%; border-collapse:collapse; font-size:12px; min-width:860px; }
+.terrain-table th {
+  padding: 8px 6px;
+  text-align: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border-bottom: 2px solid;
+  white-space: nowrap;
+}
+.terrain-table td {
+  padding: 2px 3px;
+  border-bottom: 1px solid #EEF0F3;
+  border-right: 1px solid #EEF0F3;
+  vertical-align: middle;
+}
+.terrain-table tr:nth-child(even) td { background: #FAFBFC; }
+.terrain-table tr:hover td { background: #EEF4FF !important; }
+
+.th-num-t  { background: #1F4E79; color: white; border-color: #1F4E79; }
+.th-nom-t  { background: #1F4E79; color: white; border-color: #1F4E79; text-align:left; }
+.th-obs01  { background: #2E75B6; color: white; border-color: #2E75B6; }
+.th-obs02  { background: #1A5C38; color: white; border-color: #1A5C38; }
+.th-obs03  { background: #6B3A7D; color: white; border-color: #6B3A7D; }
+.th-obs01-sub { background: #BDD7EE; color: #1F4E79; border-color: #BDD7EE; font-style:italic; }
+.th-obs02-sub { background: #C6E0B4; color: #1A5C38; border-color: #C6E0B4; font-style:italic; }
+.th-obs03-sub { background: #EEE0FF; color: #6B3A7D; border-color: #EEE0FF; }
+
+.t-num-cell { text-align:center; font-family:'Barlow Condensed',sans-serif; font-size:12px; color:#999; padding:0 6px; min-width:32px; }
+.t-nom-inp  { width:100%; border:none; background:transparent; padding:6px 8px; font-family:'Barlow',sans-serif; font-size:12px; min-width:140px; }
+.t-nom-inp:focus { outline:none; background:#EEF4FF; }
+.t-num-inp  { width:100%; border:none; background:transparent; padding:6px 4px; font-family:'Barlow Condensed',sans-serif; font-size:13px; text-align:center; min-width:60px; }
+.t-num-inp:focus { outline:none; background:#EEF4FF; }
+.t-num-inp::placeholder { color:#CCC; font-size:11px; }
+.t-auto     { text-align:center; font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; padding:6px 4px; min-width:60px; transition:background .2s; }
+.t-deg      { font-size:14px; min-width:56px; }
+.r1-btns    { display:flex; justify-content:center; gap:3px; padding:3px; }
+.r1-b       { border:1.5px solid #D0D5DD; border-radius:4px; padding:3px 6px; font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; cursor:pointer; background:#fff; color:#999; transition:all .12s; }
+.r1-b:hover { border-color:#888; color:#333; }
+.r1-b.sel-a { background:#EAF3DE; border-color:#2D8A14; color:#1E6B0A; }
+.r1-b.sel-b { background:#FAEEDA; border-color:#C47A00; color:#7A4F00; }
+.r1-b.sel-c { background:#FCEBEB; border-color:#C0392B; color:#8B1A1A; }
+.d-a { background:#EAF3DE !important; color:#1E6B0A; }
+.d-b { background:#FAEEDA !important; color:#7A4F00; }
+.d-c { background:#FCEBEB !important; color:#8B1A1A; }
+.terrain-scroll { overflow-x:auto; }
+
+.legende-terrain {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:16px;
+}
+.leg-card { border-radius:8px; padding:12px 14px; border:1.5px solid; }
+.leg-card.a { background:#EAF3DE; border-color:#2D8A14; }
+.leg-card.b { background:#FAEEDA; border-color:#C47A00; }
+.leg-card.c { background:#FCEBEB; border-color:#C0392B; }
+.leg-dg { font-family:'Bebas Neue',sans-serif; font-size:22px; }
+.leg-card.a .leg-dg { color:#1E6B0A; }
+.leg-card.b .leg-dg { color:#7A4F00; }
+.leg-card.c .leg-dg { color:#8B1A1A; }
+.leg-rules { font-size:11px; line-height:1.6; }
+.leg-card.a .leg-rules { color:#1E6B0A; }
+.leg-card.b .leg-rules { color:#7A4F00; }
+.leg-card.c .leg-rules { color:#8B1A1A; }
+
+/* ── Print ── */
+@media print {
+  #screen-accueil { display: none !important; }
+  .planner-header, .steps-nav, .nav-btns { display: none !important; }
+  .step-panel { display: block !important; }
+  body { background: white; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .profs-grid { grid-template-columns: 1fr; }
+  .select-card { padding: 24px 20px; }
+  .planner-header-inner { flex-wrap: wrap; }
+  .steps-nav { overflow-x: auto; }
+  .step-tab { font-size: 9px; padding: 8px 6px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ ÉCRAN ACCUEIL ═══════════════════════════════════════════════════════════ -->
+<div id="screen-accueil">
+  <div class="piste-bg"></div>
+  <div class="piste-lanes"></div>
+
+  <!-- Silhouette sauteur SVG -->
+  <svg class="jumper-bg" viewBox="0 0 400 600" fill="white" xmlns="http://www.w3.org/2000/svg">
+    <!-- Corps stylisé sauteur triple saut (phase cloche-pied) -->
+    <ellipse cx="200" cy="80" rx="30" ry="30"/>
+    <line x1="200" y1="110" x2="200" y2="280" stroke="white" stroke-width="18" stroke-linecap="round"/>
+    <line x1="200" y1="160" x2="100" y2="240" stroke="white" stroke-width="14" stroke-linecap="round"/>
+    <line x1="200" y1="160" x2="300" y2="200" stroke="white" stroke-width="14" stroke-linecap="round"/>
+    <line x1="200" y1="280" x2="140" y2="420" stroke="white" stroke-width="14" stroke-linecap="round"/>
+    <line x1="200" y1="280" x2="280" y2="380" stroke="white" stroke-width="14" stroke-linecap="round"/>
+    <line x1="140" y1="420" x2="100" y2="540" stroke="white" stroke-width="12" stroke-linecap="round"/>
+    <line x1="280" y1="380" x2="320" y2="480" stroke="white" stroke-width="12" stroke-linecap="round"/>
+    <!-- Ligne de piste sol -->
+    <line x1="0" y1="560" x2="400" y2="560" stroke="white" stroke-width="6"/>
+  </svg>
+
+  <div class="accueil-inner">
+    <div class="badge-crmef">CRMEF Inzegane · ADP 2026 · Triple Saut</div>
+
+    <div class="accueil-title">
+      PLANIFICATEUR
+      <span>TRIPLE SAUT</span>
+      <span class="sub">DI-TRI · Diagnostic Initial</span>
+    </div>
+
+    <div class="accueil-sub">Sous l'encadrement de M. Bouargane · EPS Tronc Commun</div>
+
+    <div class="select-card">
+
+      <!-- Sélection prof -->
+      <div class="select-label">Sélectionner le professeur</div>
+      <div class="profs-grid" id="profs-grid">
+        <button class="prof-btn" data-prof="hamza" onclick="selectProf(this)">
+          <div class="prof-name">Hamza Dahioui</div>
+          <div class="prof-code">HD · Stagiaire EPS</div>
+        </button>
+        <button class="prof-btn" data-prof="youness" onclick="selectProf(this)">
+          <div class="prof-name">Youness Boulgouiz</div>
+          <div class="prof-code">YB · Stagiaire EPS</div>
+        </button>
+        <button class="prof-btn" data-prof="abdelilah" onclick="selectProf(this)">
+          <div class="prof-name">Abdelilah Chakri</div>
+          <div class="prof-code">AC · Stagiaire EPS</div>
+        </button>
+        <button class="prof-btn" data-prof="mohamed" onclick="selectProf(this)">
+          <div class="prof-name">Mohamed Salek Brika</div>
+          <div class="prof-code">MSB · Stagiaire EPS</div>
+        </button>
+      </div>
+
+      <!-- Sélection classe -->
+      <div class="select-label" id="label-classe">Sélectionner la classe</div>
+      <div class="classes-row" id="classes-row">
+        <div class="classe-chip" data-cl="TC" onclick="selectClasse(this)" style="opacity:.35">
+          <div class="cl-label">TC</div>
+          <div class="cl-sub">Tronc Commun</div>
+        </div>
+        <div class="classe-chip" data-cl="1BAC" onclick="selectClasse(this)" style="opacity:.35">
+          <div class="cl-label">1 BAC</div>
+          <div class="cl-sub">1ère Baccalauréat</div>
+        </div>
+        <div class="classe-chip" data-cl="2BAC" onclick="selectClasse(this)" style="opacity:.35">
+          <div class="cl-label">2 BAC</div>
+          <div class="cl-sub">2ème Baccalauréat</div>
+        </div>
+      </div>
+
+      <button class="btn-lancer" id="btn-lancer" onclick="lancerPlanificateur()">
+        Lancer le planificateur
+      </button>
+    </div>
+
+    <div class="disclaimer">
+      Planificateur de cycle EPS · CRMEF Inzegane 2025-2026 · Source : Georget (1994)
+    </div>
+  </div>
+</div>
+
+<!-- ══ PLANIFICATEUR ═══════════════════════════════════════════════════════════ -->
+<div id="screen-planner">
+
+  <!-- Header sticky -->
+  <div class="planner-header">
+    <div class="planner-header-inner">
+      <div class="planner-logo">⚡ TRIPLE SAUT</div>
+      <div class="planner-context">
+        <span class="ctx-pill gold" id="ctx-prof">Prof</span>
+        <span class="ctx-pill orange" id="ctx-classe">Classe</span>
+        <span class="ctx-pill">DI-TRI</span>
+        <span class="ctx-pill">CRMEF Inzegane</span>
+      </div>
+      <button class="btn-retour" onclick="retourAccueil()">← Accueil</button>
+    </div>
+    <div class="steps-nav">
+      <div class="step-tab active" id="tab-1" onclick="goStep(1)">
+        <span class="step-n">1</span> Informations
+      </div>
+      <div class="step-tab" id="tab-2" onclick="goStep(2)">
+        <span class="step-n">2</span> Saisie terrain
+      </div>
+      <div class="step-tab" id="tab-3" onclick="goStep(3)">
+        <span class="step-n">3</span> Profils &amp; Groupes
+      </div>
+      <div class="step-tab" id="tab-4" onclick="goStep(4)">
+        <span class="step-n">4</span> Axes &amp; Volume
+      </div>
+      <div class="step-tab" id="tab-5" onclick="goStep(5)">
+        <span class="step-n">5</span> Planification
+      </div>
+    </div>
+  </div>
+
+  <div class="planner-body">
+
+    <!-- ── ÉTAPE 1 : Informations ── -->
+    <div class="step-panel" id="step-1">
+      <div class="section-title">
+        <span class="num">1</span> Informations générales
+      </div>
+      <div class="section-sub">Renseigner les informations du cycle avant de commencer</div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-head-title">Identité du cycle</span>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-field">
+              <label>APS</label>
+              <input type="text" value="Triple Saut" readonly>
+            </div>
+            <div class="form-field">
+              <label>Code projet</label>
+              <input type="text" value="DI-TRI" readonly>
+            </div>
+            <div class="form-field">
+              <label>Famille</label>
+              <input type="text" value="DI — Diagnostic Initial" readonly>
+            </div>
+            <div class="form-field">
+              <label>Niveau de contenu identifié</label>
+              <input type="text" value="Niveau 1 — Débutants" readonly>
+            </div>
+            <div class="form-field">
+              <label>Établissement</label>
+              <input type="text" value="CMREF Inzegane" id="f-etab">
+            </div>
+            <div class="form-field">
+              <label>Année scolaire</label>
+              <input type="text" value="2025 / 2026" id="f-annee">
+            </div>
+            <div class="form-field">
+              <label>Formateur encadrant</label>
+              <input type="text" value="M. Bouargane" readonly>
+            </div>
+            <div class="form-field">
+              <label>Date début cycle</label>
+              <input type="date" id="f-date" value="2026-04-01">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-head-title">Problématique retenue</span>
+        </div>
+        <div class="card-body">
+          <p style="font-size:14px;line-height:1.7;color:#333;border-left:3px solid var(--track);padding-left:16px;font-style:italic;">
+            "Cet outil permet à l'enseignant EPS de diagnostiquer le niveau de maîtrise motrice initial des élèves de Tronc Commun en triple saut. En mesurant l'écart de performance entre un saut sur élan libre et un saut sur élan réduit (5 appuis) et en analysant la répartition des distances entre les trois bonds. Afin de décider : des contenus d'apprentissage prioritaires et de constituer des groupes homogènes selon le profil moteur détecté."
+          </p>
+        </div>
+      </div>
+
+      <div class="nav-btns">
+        <button class="btn-next" onclick="goStep(2)">Saisie terrain →</button>
+      </div>
+    </div>
+
+
+    <!-- ── ÉTAPE 2 : Saisie terrain ── -->
+    <div class="step-panel" id="step-2" style="display:none">
+      <div class="section-title">
+        <span class="num">2</span> Saisie terrain — Diagnostic Initial
+      </div>
+      <div class="section-sub">Saisir les mesures de chaque élève — les degrés VE, EQ et % se calculent automatiquement</div>
+
+      <!-- Légende rapide -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-head">
+          <span class="card-head-title">Barèmes des 3 observables — DI-TRI</span>
+        </div>
+        <div class="card-body" style="padding:14px 16px">
+          <div class="legende-terrain">
+            <div class="leg-card a">
+              <div class="leg-dg">A ✔ Expert</div>
+              <div class="leg-rules">
+                OBS-01 VE : Écart ≥ 1,50 m<br>
+                OBS-02 EQ : Bond court ≥ 30 %<br>
+                OBS-03 R1 : Genou haut + reprise
+              </div>
+            </div>
+            <div class="leg-card b">
+              <div class="leg-dg">B ~ Intermédiaire</div>
+              <div class="leg-rules">
+                OBS-01 VE : Écart 0,50–1,49 m<br>
+                OBS-02 EQ : Bond court 22–29 %<br>
+                OBS-03 R1 : Freinage partiel
+              </div>
+            </div>
+            <div class="leg-card c">
+              <div class="leg-dg">C ✖ Débutant</div>
+              <div class="leg-rules">
+                OBS-01 VE : Écart &lt; 0,50 m (79%)<br>
+                OBS-02 EQ : Bond court &lt; 22 % (87,5%)<br>
+                OBS-03 R1 : Jambe tendue (75%)
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:#888;background:#F5F6F8;border-radius:6px;padding:8px 12px">
+            <strong>Procédure :</strong> OBS-01 → saisir élan réduit + élan libre (écart auto) · OBS-02 → saisir distance totale + bond le plus court (% auto) · OBS-03 → cliquer A / B / C · Durée : 12 sec/élève
+          </div>
+        </div>
+      </div>
+
+      <!-- Infos séance -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-head">
+          <span class="card-head-title">Informations séance</span>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Date séance</label>
+              <input type="date" id="t-date">
+            </div>
+            <div class="form-field">
+              <label>Séance n°</label>
+              <input type="text" id="t-seance" placeholder="1 / 12">
+            </div>
+            <div class="form-field">
+              <label>Nb élèves présents</label>
+              <input type="number" id="t-nb-present" placeholder="30" min="1" max="60" oninput="countNbEleves()">
+            </div>
+            <div class="form-field">
+              <label>Lieu</label>
+              <input type="text" id="t-lieu" placeholder="Terrain athlétisme — CMREF Inzegane">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fiche saisie -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-head-title">Fiche d'observation</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span style="font-size:11px;color:rgba(255,255,255,0.5)" id="t-filled">0 élève(s)</span>
+            <label style="background:rgba(245,197,24,0.15);border:1px solid rgba(245,197,24,0.4);border-radius:6px;padding:4px 10px;color:#F5C518;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.04em">
+              📂 Importer CSV
+              <input type="file" accept=".csv" id="csv-input" style="display:none" onchange="importCSV(this)">
+            </label>
+            <button onclick="resetTerrain()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:4px 10px;color:rgba(255,255,255,0.6);font-size:11px;cursor:pointer">Reset</button>
+          </div>
+        </div>
+        <!-- Info format CSV -->
+        <div id="csv-info" style="background:#1A1A2E;border-bottom:1px solid rgba(255,255,255,0.08);padding:10px 16px;font-size:11px;color:rgba(255,255,255,0.45);display:none">
+          Format CSV attendu : <code style="color:#F5C518">Nom,ElanReduit,ElanLibre,DistTotale,BondCourt,R1</code> — première ligne = en-tête ignorée
+          <button onclick="document.getElementById('csv-info').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;margin-left:8px;font-size:13px">✕</button>
+        </div>
+        <div class="terrain-scroll">
+          <table class="terrain-table" id="terrain-table">
+            <thead>
+              <tr>
+                <th class="th-num-t" rowspan="2">N°</th>
+                <th class="th-nom-t" rowspan="2" style="min-width:140px;text-align:left;padding-left:8px">Prénom / Nom</th>
+                <th class="th-obs01" colspan="4">OBS-01 — Vitesse Élan (VE)</th>
+                <th class="th-obs02" colspan="4">OBS-02 — Amplitude Cloche-Pied (EQ)</th>
+                <th class="th-obs03" colspan="1">OBS-03 R1</th>
+                <th style="background:#333;color:rgba(255,255,255,0.3);font-size:9px;width:36px" rowspan="2"></th>
+              </tr>
+              <tr>
+                <th class="th-obs01-sub">Élan réduit [m]</th>
+                <th class="th-obs01-sub">Élan libre [m]</th>
+                <th class="th-obs01-sub">Écart ⚡</th>
+                <th class="th-obs01-sub">Degré VE ⚡</th>
+                <th class="th-obs02-sub">Total [m]</th>
+                <th class="th-obs02-sub">Bond court [m]</th>
+                <th class="th-obs02-sub">% Bond ⚡</th>
+                <th class="th-obs02-sub">Degré EQ ⚡</th>
+                <th class="th-obs03-sub" style="white-space:nowrap">A / B / C</th>
+              </tr>
+            </thead>
+            <tbody id="terrain-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Bouton ajouter élève -->
+      <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
+        <button onclick="ajouterEleve()" style="background:linear-gradient(135deg,#C85A1A,#8B3A0A);border:none;border-radius:10px;padding:13px 24px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.06em;color:white;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 3px 12px rgba(200,90,26,0.3)">
+          <span style="font-size:22px;font-family:sans-serif;font-weight:900">+</span> Ajouter un élève
+        </button>
+        <span style="font-size:12px;color:#888">ou importer un CSV (bouton en haut à droite)</span>
+      </div>
+
+      <div class="nav-btns" style="margin-top:16px">
+        <button class="btn-prev" onclick="goStep(1)">← Retour</button>
+        <button class="btn-next" onclick="transferToStep3()">Profils et groupes →</button>
+      </div>
+    </div>
+
+    <!-- ── ÉTAPE 3 : Profils élèves ── -->
+    <div class="step-panel" id="step-3" style="display:none">
+      <div class="section-title">
+        <span class="num">3</span> Profils des élèves
+      </div>
+      <div class="section-sub">Saisir la répartition des élèves selon les résultats du diagnostic initial</div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-head-title">Données de la classe</span>
+        </div>
+        <div class="card-body">
+          <div class="form-grid" style="margin-bottom:24px">
+            <div class="form-field">
+              <label>Nombre total d'élèves</label>
+              <input type="number" id="f-total" value="30" min="1" max="60" oninput="updateProfils()">
+            </div>
+            <div class="form-field">
+              <label>Groupe A — Expert (nb élèves)</label>
+              <input type="number" id="f-na" value="4" min="0" oninput="updateProfils()">
+            </div>
+            <div class="form-field">
+              <label>Groupe B — Intermédiaire (nb)</label>
+              <input type="number" id="f-nb" value="8" min="0" oninput="updateProfils()">
+            </div>
+            <div class="form-field">
+              <label>Groupe C — Débutant (nb élèves)</label>
+              <input type="number" id="f-nc" value="18" min="0" oninput="updateProfils()">
+            </div>
+          </div>
+
+          <div class="profils-bar" id="profils-bar">
+            <div class="profil-chip a">
+              <div class="pct" id="pct-a">13%</div>
+              <div class="plabel">Expert (A)<br><span id="nb-a">4</span> élèves</div>
+            </div>
+            <div class="profil-chip b">
+              <div class="pct" id="pct-b">27%</div>
+              <div class="plabel">Interméd. (B)<br><span id="nb-b">8</span> élèves</div>
+            </div>
+            <div class="profil-chip c">
+              <div class="pct" id="pct-c">60%</div>
+              <div class="plabel">Débutant (C)<br><span id="nb-c">18</span> élèves</div>
+            </div>
+          </div>
+
+          <div id="warning-profil" style="display:none;background:#FEF5F0;border:1.5px solid var(--track);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--track-d);font-weight:600;">
+            ⚠️ La somme des groupes ne correspond pas au total de la classe.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-head-title">Observables diagnostiques — Résultats</span>
+        </div>
+        <div class="card-body">
+          <table class="plan-table">
+            <thead>
+              <tr>
+                <th>Observable</th>
+                <th>Degré A (Expert)</th>
+                <th>Degré B (Interméd.)</th>
+                <th>Degré C (Débutant)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>OBS-01 VE</strong><br><span style="font-size:11px;color:#666">Gestion vitesse élan</span></td>
+                <td><span style="background:var(--vert-l);color:var(--vert-t);padding:3px 8px;border-radius:4px;font-weight:700;font-size:12px">Écart ≥ 1,50 m</span></td>
+                <td><span style="background:var(--amber-l);color:var(--amber-t);padding:3px 8px;border-radius:4px;font-weight:700;font-size:12px">0,50–1,49 m</span></td>
+                <td><span style="background:var(--rouge-l);color:var(--rouge-t);padding:3px 8px;border-radius:4px;font-weight:700;font-size:12px">&lt; 0,50 m (79%)</span></td>
+              </tr>
+              <tr>
+                <td><strong>OBS-02 EQ</strong><br><span style="font-size:11px;color:#666">Amplitude cloche-pied</span></td>
+                <td><span style="background:var(--vert-l);color:var(--vert-t);padding:3px 8px;border-radius:4px;font-weight:700;font-size:12px">Bond court ≥ 30%</span></td>
+                <td><span style="background:var(--amber-l);color:var(--amber-t);padding:3px 8px;border-radius:4px;font-weight:700;font-size:12px">22–29%</span></td>
+                <td><span style="background:var(--rouge-l);color:var(--rouge-t);padding:3px 8px;border-radius:4px;font-weight:700;font-size:12px">&lt; 22% (87,5%)</span></td>
+              </tr>
+              <tr>
+                <td><strong>OBS-03 R1</strong><br><span style="font-size:11px;color:#666">Réception 1er bond</span></td>
+                <td><span style="background:var(--vert-l);color:var(--vert-t);padding:3px 8px;border-radius:4px;font-weight:700;font-size:12px">Genou haut + reprise</span></td>
+                <td><span style="background:var(--amber-l);color:var(--amber-t);padding:3px 8px;border-radius:4px;font-weight:700;font-size:12px">Freinage partiel</span></td>
+                <td><span style="background:var(--rouge-l);color:var(--rouge-t);padding:3px 8px;border-radius:4px;font-weight:700;font-size:12px">Jambe tendue (75%)</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="nav-btns">
+        <button class="btn-prev" onclick="goStep(2)">← Retour</button>
+        <button class="btn-next" onclick="goStep(4)">Axes et volume →</button>
+      </div>
+    </div>
+
+    <!-- ── ÉTAPE 3 : Axes & Volume ── -->
+    <div class="step-panel" id="step-4" style="display:none">
+      <div class="section-title">
+        <span class="num">4</span> Axes prioritaires et volume
+      </div>
+      <div class="section-sub">Choisir 2 à 4 axes d'apprentissage et régler le volume du cycle</div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-head-title">Axes d'apprentissage — sélectionner 2 à 4</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.5)" id="axes-count">0 sélectionné(s)</span>
+        </div>
+        <div class="card-body">
+          <div class="axes-list" id="axes-list">
+            <!-- générés par JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-head-title">Volume du cycle</span>
+        </div>
+        <div class="card-body">
+          <div class="slider-wrap">
+            <div class="slider-row">
+              <div>
+                <div class="slider-val" id="slider-val">8</div>
+                <div class="slider-label">séances</div>
+              </div>
+              <input type="range" id="slider-seances" min="6" max="12" value="8"
+                     oninput="updateSlider(this.value)" style="--pct:40%">
+              <div style="text-align:right">
+                <div style="font-size:11px;color:#888">Min 6 · Max 12</div>
+              </div>
+            </div>
+            <div id="slider-distrib" style="font-size:13px;color:#555;background:#F5F6F8;border-radius:8px;padding:12px 16px;margin-top:8px;">
+              Sélectionnez des axes pour voir la distribution
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-btns">
+        <button class="btn-prev" onclick="goStep(3)">← Retour</button>
+        <button class="btn-next" onclick="goStep(5)">Voir la planification →</button>
+      </div>
+    </div>
+
+    <!-- ── ÉTAPE 4 : Planification ── -->
+    <div class="step-panel" id="step-5" style="display:none">
+      <div class="section-title">
+        <span class="num">5</span> Planification du cycle
+      </div>
+      <div class="section-sub">Répartition séance par séance — décision pédagogique de l'enseignant</div>
+
+      <div class="card" id="plan-summary-card" style="margin-bottom:16px"></div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-head-title" id="plan-table-title">Plan du cycle</span>
+          <button class="btn-print-plan" onclick="window.print()" style="font-size:13px;padding:6px 14px;border-radius:6px">🖨 Imprimer</button>
+        </div>
+        <div class="card-body" style="padding:0">
+          <table class="plan-table" id="plan-table">
+            <thead>
+              <tr>
+                <th style="width:56px">N°</th>
+                <th style="width:110px">Type</th>
+                <th>Contenu principal</th>
+                <th style="width:100px">Axe</th>
+                <th style="width:90px">Groupe cible</th>
+              </tr>
+            </thead>
+            <tbody id="plan-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="nav-btns">
+        <button class="btn-prev" onclick="goStep(4)">← Modifier</button>
+        <button class="btn-print-plan" onclick="window.print()">🖨 Imprimer le plan</button>
+      </div>
+    </div>
+
+  </div><!-- /planner-body -->
+</div><!-- /screen-planner -->
+
+<script>
+// ── DONNÉES ────────────────────────────────────────────────────────────────────
+const PROFS = {
+  hamza:     { nom: "Hamza Dahioui",       code: "HD" },
+  youness:   { nom: "Youness Boulgouiz",   code: "YB" },
+  abdelilah: { nom: "Abdelilah Chakri",    code: "AC" },
+  mohamed:   { nom: "Mohamed Salek Brika", code: "MSB" },
+};
+
+const AXES = [
+  {
+    id: 1,
+    titre: "Gestion de l'élan (VE)",
+    desc: "Apprendre a rentabiliser la course d'elan — structure 5-5-5 appuis, rythme accelere progressif",
+    obs: "OBS-01",
+    cible: "Groupe C prioritaire",
+    contenus: ["Elan reduit 5 appuis maitrise","Structure rythmique 5-5-5","Acceleration progressive","Preparation a l'appel"],
+  },
+  {
+    id: 2,
+    titre: "Reception dynamique (R1)",
+    desc: "Transformer la reception du cloche-pied — genou haut, flechissement actif, reprise immediate",
+    obs: "OBS-03",
+    cible: "Groupe C prioritaire",
+    contenus: ["Genou haut vers l'avant","Flechissement actif a la reception","Reprise immediate du 2e bond","Eviter la jambe tendue"],
+  },
+  {
+    id: 3,
+    titre: "Equilibre des 3 bonds (EQ)",
+    desc: "Equilibrer les distances cloche-pied / foulee bondissante / saut — eviter l'ecrasement du 2e bond",
+    obs: "OBS-02",
+    cible: "Groupe B et C",
+    contenus: ["Amplitude du cloche-pied","Enchainement cloche-pied / foulee bondissante","2e bond actif non ecrase","Rythme general du triple saut"],
+  },
+  {
+    id: 4,
+    titre: "Vitesse d'impulsion",
+    desc: "Conserver et utiliser la vitesse horizontale a chaque impulsion — jambe libre active",
+    obs: "OBS-01",
+    cible: "Groupe A et B",
+    contenus: ["Impulsion active","Jambe libre actif (double blocage)","Conservation vitesse horizontale","Reduction du freinage au sol"],
+  },
+  {
+    id: 5,
+    titre: "Rythme general du saut",
+    desc: "Construire un rythme global reconnaissable — acceleration, impulsion, vol, reception enchainees",
+    obs: "OBS-02",
+    cible: "Tous groupes",
+    contenus: ["Rythme ternaire cloche-pied / foulee / saut","Reperes sonores (frappe au sol)","Travail sans elan complet","Enchainements progressifs"],
+  },
+  {
+    id: 6,
+    titre: "Consolidation et transfert",
+    desc: "Transferer les acquis en situation integree — saut complet sur elan libre avec mesure",
+    obs: "OBS-01 + OBS-02",
+    cible: "Tous groupes",
+    contenus: ["Situation integree saut complet","Mesure performance et ecart","Auto-evaluation entre pairs","Ajustement groupe / contenu"],
+  },
+];
+
+const TYPES_SEANCES = {
+  DI: { label: "Diagnostic", cls: "type-di" },
+  EN: { label: "Apprentissage", cls: "type-en" },
+  ES: { label: "Evaluation", cls: "type-es" },
+};
+
+// ── ETAT ───────────────────────────────────────────────────────────────────────
+let state = {
+  prof: null,
+  classe: null,
+  axesSelected: [],
+  nbSeances: 8,
+};
+
+// ── ACCUEIL ────────────────────────────────────────────────────────────────────
+function selectProf(btn) {
+  document.querySelectorAll('.prof-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.prof = btn.dataset.prof;
+
+  // Debloquer classes
+  document.querySelectorAll('.classe-chip').forEach(c => {
+    c.style.opacity = '1';
+    c.style.pointerEvents = 'auto';
+    c.style.cursor = 'pointer';
+  });
+
+  checkReady();
+}
+
+function selectClasse(chip) {
+  document.querySelectorAll('.classe-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  state.classe = chip.dataset.cl;
+  checkReady();
+}
+
+function checkReady() {
+  const btn = document.getElementById('btn-lancer');
+  if (state.prof && state.classe) {
+    btn.classList.add('ready');
+    btn.textContent = 'Lancer le planificateur';
+  } else if (state.prof && !state.classe) {
+    btn.classList.remove('ready');
+    btn.textContent = 'Choisir une classe pour continuer';
+  } else {
+    btn.classList.remove('ready');
+    btn.textContent = 'Lancer le planificateur';
+  }
+}
+
+function lancerPlanificateur() {
+  if (!state.prof || !state.classe) return;
+
+  const p = PROFS[state.prof];
+  document.getElementById('ctx-prof').textContent = p.nom;
+  document.getElementById('ctx-classe').textContent = state.classe;
+
+  document.getElementById('screen-accueil').style.display = 'none';
+  document.getElementById('screen-planner').style.display = 'block';
+
+  buildAxesList();
+  renderEleves();
+  goStep(2);
+}
+
+function retourAccueil() {
+  document.getElementById('screen-planner').style.display = 'none';
+  document.getElementById('screen-accueil').style.display = 'flex';
+}
+
+// ── ETAPES ─────────────────────────────────────────────────────────────────────
+let currentStep = 1;
+
+function goStep(n) {
+  document.querySelectorAll('.step-panel').forEach(p => p.style.display = 'none');
+  document.getElementById('step-' + n).style.display = 'block';
+
+  document.querySelectorAll('.step-tab').forEach((t, i) => {
+    t.classList.remove('active', 'done');
+    if (i + 1 < n) t.classList.add('done');
+    if (i + 1 === n) t.classList.add('active');
+  });
+
+  currentStep = n;
+  if (n === 5) buildPlan();
+  window.scrollTo(0, 0);
+}
+
+// ── PROFILS ────────────────────────────────────────────────────────────────────
+function updateProfils() {
+  const total = parseInt(document.getElementById('f-total').value) || 0;
+  const na    = parseInt(document.getElementById('f-na').value) || 0;
+  const nb    = parseInt(document.getElementById('f-nb').value) || 0;
+  const nc    = parseInt(document.getElementById('f-nc').value) || 0;
+  const somme = na + nb + nc;
+
+  document.getElementById('pct-a').textContent = total ? Math.round(na/total*100)+'%' : '—';
+  document.getElementById('pct-b').textContent = total ? Math.round(nb/total*100)+'%' : '—';
+  document.getElementById('pct-c').textContent = total ? Math.round(nc/total*100)+'%' : '—';
+  document.getElementById('nb-a').textContent  = na;
+  document.getElementById('nb-b').textContent  = nb;
+  document.getElementById('nb-c').textContent  = nc;
+
+  const warn = document.getElementById('warning-profil');
+  warn.style.display = (somme !== total && somme > 0) ? 'block' : 'none';
+}
+
+// ── AXES ───────────────────────────────────────────────────────────────────────
+function buildAxesList() {
+  const container = document.getElementById('axes-list');
+  container.innerHTML = '';
+
+  AXES.forEach(axe => {
+    const div = document.createElement('div');
+    div.className = 'axe-item';
+    div.dataset.id = axe.id;
+    div.innerHTML = `
+      <div class="axe-check"></div>
+      <div class="axe-info">
+        <div class="axe-title">AXE ${axe.id} — ${axe.titre}</div>
+        <div class="axe-desc">${axe.desc}</div>
+        <div style="margin-top:6px;font-size:11px;color:#888">Cible : ${axe.cible}</div>
+      </div>
+      <div class="axe-obs">${axe.obs}</div>
+    `;
+    div.addEventListener('click', () => toggleAxe(div, axe.id));
+    container.appendChild(div);
+  });
+}
+
+function toggleAxe(div, id) {
+  const idx = state.axesSelected.indexOf(id);
+  if (idx >= 0) {
+    state.axesSelected.splice(idx, 1);
+    div.classList.remove('selected');
+  } else {
+    if (state.axesSelected.length >= 4) return;
+    state.axesSelected.push(id);
+    div.classList.add('selected');
+  }
+  document.getElementById('axes-count').textContent = state.axesSelected.length + ' selectionne(s)';
+  updateSlider(state.nbSeances);
+}
+
+function updateSlider(val) {
+  state.nbSeances = parseInt(val);
+  document.getElementById('slider-val').textContent = val;
+  // Mise a jour gradient
+  const pct = ((val - 6) / 6 * 100).toFixed(0) + '%';
+  document.getElementById('slider-seances').style.setProperty('--pct', pct);
+
+  // Distribution
+  const nb  = parseInt(val);
+  const sel = state.axesSelected;
+  if (!sel.length) {
+    document.getElementById('slider-distrib').textContent = 'Selectionnez des axes pour voir la distribution';
+    return;
+  }
+
+  // 1 seance DI + 1 seance ES + reste en EN
+  const enTotal = nb - 2;
+  const base     = Math.floor(enTotal / sel.length);
+  const reste    = enTotal % sel.length;
+
+  let html = '<strong>Distribution prevue :</strong> ';
+  html += 'S1 Diagnostic (DI) · ';
+  sel.forEach((axeId, i) => {
+    const axe = AXES.find(a => a.id === axeId);
+    const n   = base + (i < reste ? 1 : 0);
+    html += `AXE ${axeId} ${axe.titre} (${n} seance${n > 1 ? 's' : ''}) · `;
+  });
+  html += `S${nb} Evaluation (ES)`;
+  document.getElementById('slider-distrib').innerHTML = html;
+}
+
+// ── PLAN ───────────────────────────────────────────────────────────────────────
+function buildPlan() {
+  const nb   = state.nbSeances;
+  const sel  = state.axesSelected;
+  const prof = PROFS[state.prof];
+  const cl   = state.classe;
+  const na   = parseInt(document.getElementById('f-na').value) || 0;
+  const nb2  = parseInt(document.getElementById('f-nb').value) || 0;
+  const nc   = parseInt(document.getElementById('f-nc').value) || 0;
+
+  // Résumé
+  const sumCard = document.getElementById('plan-summary-card');
+  sumCard.innerHTML = `
+    <div class="card-head">
+      <span class="card-head-title">Résumé du cycle</span>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;font-size:13px;">
+        <div><strong>Enseignant</strong><br>${prof.nom}</div>
+        <div><strong>Classe</strong><br>${cl}</div>
+        <div><strong>Volume</strong><br>${nb} séances</div>
+        <div><strong>Axes retenus</strong><br>${sel.length > 0 ? sel.map(id => 'AXE '+id).join(' · ') : 'Aucun'}</div>
+        <div><strong>Groupe A</strong><br>${na} élèves</div>
+        <div><strong>Groupe B</strong><br>${nb2} élèves</div>
+        <div><strong>Groupe C</strong><br>${nc} élèves</div>
+        <div><strong>Encadrant</strong><br>M. Bouargane</div>
+      </div>
+    </div>
+  `;
+
+  // Titre table
+  document.getElementById('plan-table-title').textContent =
+    `Planification — ${nb} séances · ${cl} · ${prof.nom}`;
+
+  // Génération séances
+  const tbody = document.getElementById('plan-tbody');
+  tbody.innerHTML = '';
+
+  const enTotal = Math.max(0, nb - 2);
+  const base    = sel.length ? Math.floor(enTotal / sel.length) : 0;
+  const reste   = sel.length ? enTotal % sel.length : 0;
+
+  // Séance 1 : DI
+  addRow(tbody, 1, 'DI',
+    'Diagnostic initial — Mesure élan réduit (5 appuis) + élan libre + bonds + réception',
+    'DI-TRI', 'Tous groupes');
+
+  // Séances EN
+  let seanceNum = 2;
+  if (sel.length > 0) {
+    sel.forEach((axeId, i) => {
+      const axe = AXES.find(a => a.id === axeId);
+      const n   = base + (i < reste ? 1 : 0);
+      for (let j = 0; j < n; j++) {
+        const contenu = axe.contenus[j % axe.contenus.length];
+        addRow(tbody, seanceNum, 'EN',
+          `${axe.titre} — ${contenu}`,
+          `AXE ${axeId}`, axe.cible);
+        seanceNum++;
+      }
+    });
+  } else {
+    for (let i = 0; i < enTotal; i++) {
+      addRow(tbody, seanceNum, 'EN', 'Contenu a definir — Selectionner des axes (etape 3)', '—', 'Tous');
+      seanceNum++;
+    }
+  }
+
+  // Dernière séance : ES
+  addRow(tbody, nb, 'ES',
+    'Evaluation sommative — Saut sur élan libre · Mesure distances bonds · Profil final',
+    'ES-TRI', 'Tous groupes');
+}
+
+function addRow(tbody, num, type, contenu, axe, cible) {
+  const t = TYPES_SEANCES[type];
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="seance-num">${num}</td>
+    <td><span class="seance-type ${t.cls}">${t.label}</span></td>
+    <td class="seance-contenu">${contenu}</td>
+    <td class="seance-axe">${axe}</td>
+    <td style="font-size:11px;color:#666">${cible}</td>
+  `;
+  tbody.appendChild(tr);
+}
+
+
+// ── FICHE TERRAIN ──────────────────────────────────────────────────────────────
+const terrainData = []; // tableau dynamique, on ajoute un eleve a la fois
+
+function renderEleves() {
+  const tbody = document.getElementById("terrain-tbody");
+  tbody.innerHTML = "";
+  terrainData.forEach((d, i) => appendRow(tbody, i, d));
+  updateFilled();
+}
+
+function appendRow(tbody, i, d) {
+  const bg = i % 2 === 0 ? "#FFFFFF" : "#FAFBFC";
+  const tr = document.createElement("tr");
+  tr.id = "row-" + i;
+  tr.style.background = bg;
+  tr.innerHTML = `
+    <td class="t-num-cell">${i+1}</td>
+    <td><input class="t-nom-inp" type="text" value="${d.nom}" placeholder="Prenom Nom" data-idx="${i}" data-f="nom" oninput="saveField(this)"></td>
+    <td><input class="t-num-inp" type="number" step="0.01" value="${d.er}" placeholder="0.00" data-idx="${i}" data-f="er" oninput="saveField(this);recalcRow(${i})"></td>
+    <td><input class="t-num-inp" type="number" step="0.01" value="${d.el}" placeholder="0.00" data-idx="${i}" data-f="el" oninput="saveField(this);recalcRow(${i})"></td>
+    <td class="t-auto" id="ecart-${i}">—</td>
+    <td class="t-auto t-deg" id="dve-${i}">—</td>
+    <td><input class="t-num-inp" type="number" step="0.01" value="${d.tot}" placeholder="0.00" data-idx="${i}" data-f="tot" oninput="saveField(this);recalcRow(${i})"></td>
+    <td><input class="t-num-inp" type="number" step="0.01" value="${d.bc}" placeholder="0.00" data-idx="${i}" data-f="bc" oninput="saveField(this);recalcRow(${i})"></td>
+    <td class="t-auto" id="pct-eq-${i}">—</td>
+    <td class="t-auto t-deg" id="deq-${i}">—</td>
+    <td>
+      <div class="r1-btns">
+        <button class="r1-b ${d.r1==="A"?"sel-a":""}" onclick="setR1(${i},'A',this)">A</button>
+        <button class="r1-b ${d.r1==="B"?"sel-b":""}" onclick="setR1(${i},'B',this)">B</button>
+        <button class="r1-b ${d.r1==="C"?"sel-c":""}" onclick="setR1(${i},'C',this)">C</button>
+      </div>
+    </td>
+    <td style="text-align:center">
+      <button onclick="supprimerEleve(${i})" title="Supprimer" style="background:none;border:none;cursor:pointer;font-size:15px;color:#CCC;padding:4px 6px" onmouseover="this.style.color='#C0392B'" onmouseout="this.style.color='#CCC'">✕</button>
+    </td>
+  `;
+  tbody.appendChild(tr);
+  recalcRow(i);
+}
+
+function ajouterEleve() {
+  const i = terrainData.length;
+  terrainData.push({ nom:"", er:"", el:"", tot:"", bc:"", r1:"" });
+  const tbody = document.getElementById("terrain-tbody");
+  appendRow(tbody, i, terrainData[i]);
+  updateFilled();
+  // Focus sur le nom du nouvel eleve
+  setTimeout(() => {
+    const inp = document.querySelector(`#row-${i} .t-nom-inp`);
+    if (inp) { inp.focus(); inp.scrollIntoView({ behavior:"smooth", block:"center" }); }
+  }, 50);
+}
+
+function supprimerEleve(i) {
+  terrainData.splice(i, 1);
+  renderEleves();
+}
+
+function buildTerrainTable() { renderEleves(); }
+
+function saveField(inp) {
+  const i = parseInt(inp.dataset.idx);
+  const f = inp.dataset.f;
+  if (terrainData[i]) terrainData[i][f] = inp.value;
+  updateFilled();
+}
+
+function setR1(i, val, btn) {
+  if (terrainData[i]) terrainData[i].r1 = val;
+  const row = btn.closest("tr");
+  row.querySelectorAll(".r1-b").forEach(b => b.className = "r1-b");
+  btn.classList.add("sel-" + val.toLowerCase());
+  updateFilled();
+}
+
+function recalcRow(i) {
+  const d = terrainData[i];
+  if (!d) return;
+  const er  = parseFloat(d.er),  el  = parseFloat(d.el);
+  const tot = parseFloat(d.tot), bc  = parseFloat(d.bc);
+
+  const ecart = (!isNaN(er)&&!isNaN(el)) ? Math.abs(el-er) : null;
+  const dve   = ecart===null?"":ecart>=1.5?"A":ecart>=0.5?"B":"C";
+  const eCell = document.getElementById("ecart-"+i);
+  const dvCell= document.getElementById("dve-"+i);
+  if (eCell)  { eCell.textContent  = ecart!==null?ecart.toFixed(2):"—"; eCell.className  = "t-auto"+(dve?" d-"+dve.toLowerCase():""); }
+  if (dvCell) { dvCell.textContent = dve?dve+(dve==="A"?" ✔":dve==="B"?" ~":" ✖"):"—"; dvCell.className = "t-auto t-deg"+(dve?" d-"+dve.toLowerCase():""); }
+
+  const pct  = (!isNaN(tot)&&!isNaN(bc)&&tot>0) ? bc/tot*100 : null;
+  const deq  = pct===null?"":pct>=30?"A":pct>=22?"B":"C";
+  const pCell = document.getElementById("pct-eq-"+i);
+  const dqCell= document.getElementById("deq-"+i);
+  if (pCell)  { pCell.textContent  = pct!==null?pct.toFixed(1)+"%":"—"; pCell.className  = "t-auto"+(deq?" d-"+deq.toLowerCase():""); }
+  if (dqCell) { dqCell.textContent = deq?deq+(deq==="A"?" ✔":deq==="B"?" ~":" ✖"):"—"; dqCell.className = "t-auto t-deg"+(deq?" d-"+deq.toLowerCase():""); }
+}
+
+function updateFilled() {
+  const n = terrainData.filter(d => d && (d.nom||d.er||d.el)).length;
+  const el = document.getElementById("t-filled");
+  if (el) el.textContent = n + " eleve(s)";
+}
+
+function countNbEleves() { updateFilled(); }
+
+function resetTerrain() {
+  if (!confirm("Reinitialiser toute la fiche ? Toutes les donnees seront perdues.")) return;
+  terrainData.length = 0;
+  renderEleves();
+}
+
+// ── IMPORT CSV ─────────────────────────────────────────────────────────────────
+// Format attendu : Nom,ElanReduit,ElanLibre,DistTotale,BondCourt,R1
+function importCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split(/\r?\n/).filter(function(l){return l.trim();});
+    let imported = 0;
+    // Detecter si premiere ligne = en-tete
+    const firstCols = lines[0].split(/[,;]/).map(c=>c.trim().toLowerCase());
+    const hasHeader = isNaN(parseFloat(firstCols[1]));
+    const start = hasHeader ? 1 : 0;
+
+    for (let li = start; li < lines.length; li++) {
+      const cols = lines[li].split(/[,;]/).map(c => c.trim().replace(/"/g,""));
+      if (cols.length < 2 || !cols[0]) continue;
+      const d = {
+        nom: cols[0] || "",
+        er:  cols[1] || "",
+        el:  cols[2] || "",
+        tot: cols[3] || "",
+        bc:  cols[4] || "",
+        r1:  (cols[5]||"").toUpperCase().replace(/[^ABC]/g,""),
+      };
+      terrainData.push(d);
+      imported++;
+    }
+    renderEleves();
+    document.getElementById("csv-info").style.display = "block";
+    alert(imported + " eleve(s) importe(s) depuis le fichier CSV.");
+  };
+  reader.readAsText(file, "UTF-8");
+  input.value = ""; // reset pour permettre re-import
+}
+
+function transferToStep3() {
+  // Compter les profils dominants depuis la saisie terrain
+  let na = 0, nb = 0, nc = 0, total = 0;
+  terrainData.forEach(d => {
+    if (!d || !d.nom) return;
+    total++;
+    const er = parseFloat(d.er), el = parseFloat(d.el);
+    const tot = parseFloat(d.tot), bc = parseFloat(d.bc);
+    const ecart = (!isNaN(er)&&!isNaN(el)) ? Math.abs(el-er) : null;
+    const pct   = (!isNaN(tot)&&!isNaN(bc)&&tot>0) ? bc/tot*100 : null;
+    const dve = ecart===null?"":ecart>=1.5?"A":ecart>=0.5?"B":"C";
+    const deq = pct===null?"":pct>=30?"A":pct>=22?"B":"C";
+    const r1  = d.r1 || "";
+    // Profil dominant = vote majoritaire
+    const votes = [dve,deq,r1].filter(v=>v);
+    if (!votes.length) return;
+    const cnt = {A:0,B:0,C:0};
+    votes.forEach(v => cnt[v]++);
+    const dom = Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0][0];
+    if (dom==="A") na++;
+    else if (dom==="B") nb++;
+    else nc++;
+  });
+
+  // Pré-remplir étape 3 si on a des données
+  if (total > 0) {
+    const tf = document.getElementById("f-total");
+    const fa = document.getElementById("f-na");
+    const fb = document.getElementById("f-nb");
+    const fc = document.getElementById("f-nc");
+    if (tf) tf.value = total;
+    if (fa) fa.value = na;
+    if (fb) fb.value = nb;
+    if (fc) fc.value = nc;
+    updateProfils();
+  }
+  goStep(3);
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────────
+updateProfils();
+updateSlider(8);
+</script>
+</body>
+</html>
